@@ -23,7 +23,7 @@ const JOB_ENGINE_ABI = [
     name: 'postJob',
     inputs: [
       { name: 'capability', type: 'bytes32' },
-      { name: 'taskPayloadIPFS', type: 'string' },
+      { name: 'taskPayloadIpfs', type: 'string' },
       { name: 'qualityThreshold', type: 'uint256' },
       { name: 'deadlineOffset', type: 'uint256' },
     ],
@@ -87,9 +87,13 @@ export class NexusOrchestratorAgent {
     const hash = await this.walletClient.writeContract(request);
     const receipt = await this.publicClient.waitForTransactionReceipt({ hash });
 
-    const jobId = 1n; // simplified — parse from logs
-    console.log(`[OrchestratorAgent] Job#${jobId} posted`);
-    return jobId;
+    const jobCount = await this.publicClient.readContract({
+      address: JOB_ENGINE_ADDRESS as `0x${string}`,
+      abi: [{ type: 'function', name: 'jobCount', inputs: [], outputs: [{ type: 'uint256' }], stateMutability: 'view' }],
+      functionName: 'jobCount',
+    }) as bigint;
+    console.log(`[OrchestratorAgent] Job#${jobCount} posted`);
+    return jobCount;
   }
 
   async runPipeline(count: number, capability: `0x${string}`, taskSpec: string): Promise<void> {

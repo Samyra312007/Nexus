@@ -62,7 +62,7 @@ contract NexusEscrow {
             require(sent, "Release transfer failed");
             emit EscrowReleased(jobId, worker, escrowAmount);
         } else {
-            (uint256 id, address owner,,,,,,,,,,,,,) = INexusRegistry3(registry).getAgent(
+            (, address owner,,,,,,,,,,,,,) = INexusRegistry3(registry).getAgent(
                 _getWorkerAgentId(worker)
             );
             uint256 refundAmount = escrowAmount / 2;

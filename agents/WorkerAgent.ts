@@ -59,7 +59,7 @@ const JOB_ENGINE_ABI = [
       { name: 'id', type: 'uint256' },
       { name: 'poster', type: 'address' },
       { name: 'requiredCapability', type: 'bytes32' },
-      { name: 'taskPayloadIPFS', type: 'string' },
+      { name: 'taskPayloadIpfs', type: 'string' },
       { name: 'budgetWei', type: 'uint256' },
       { name: 'qualityThreshold', type: 'uint256' },
       { name: 'deadline', type: 'uint256' },
@@ -73,6 +73,15 @@ const JOB_ENGINE_ABI = [
 ] as const;
 
 const REGISTRY_ABI = [
+  {
+    type: 'event',
+    name: 'AgentRegistered',
+    inputs: [
+      { indexed: true, name: 'agentId', type: 'uint256' },
+      { indexed: true, name: 'owner', type: 'address' },
+      { indexed: false, name: 'capabilities', type: 'bytes32[]' },
+    ],
+  },
   {
     type: 'function',
     name: 'registerAgent',
@@ -116,7 +125,7 @@ export class NexusWorkerAgent {
       (c) => ('0x' + Buffer.from(c).toString('hex').padEnd(64, '0')) as `0x${string}`
     );
 
-    const { request } = await this.publicClient.simulateContract({
+    const hash = await this.walletClient.writeContract({
       address: REGISTRY_ADDRESS as `0x${string}`,
       abi: REGISTRY_ABI,
       functionName: 'registerAgent',
@@ -125,9 +134,12 @@ export class NexusWorkerAgent {
       account: this.account,
     });
 
-    const hash = await this.walletClient.writeContract(request);
     const receipt = await this.publicClient.waitForTransactionReceipt({ hash });
-    this.agentId = 1n; // simplified — would parse from event logs
+    this.agentId = BigInt(await this.publicClient.readContract({
+      address: REGISTRY_ADDRESS as `0x${string}`,
+      abi: [{ type: 'function', name: 'agentCount', inputs: [], outputs: [{ type: 'uint256' }], stateMutability: 'view' }],
+      functionName: 'agentCount',
+    }));
 
     console.log(`[WorkerAgent] Registered as agent #${this.agentId}`);
     return this.agentId;

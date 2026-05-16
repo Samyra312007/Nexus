@@ -122,7 +122,7 @@ contract NexusAuditEngine {
                 audit.passed = audit.score >= _getQualityThreshold(jobId);
                 audit.completed = true;
 
-                _settleJob(jobId, audit.score, audit.passed);
+                _settleJob(jobId, audit.score);
                 emit AuditCompleted(jobId, audit.score, audit.passed);
             } else {
                 emit AuditFailed(jobId, "INSUFFICIENT_VALIDATORS");
@@ -134,12 +134,18 @@ contract NexusAuditEngine {
         }
     }
 
-    function _settleJob(uint256 jobId, uint256 qualityScore, bool passed) internal {
+    function _settleJob(uint256 jobId, uint256 qualityScore) internal {
         uint256 threshold = _getQualityThreshold(jobId);
         address worker = _getWorkerAddress(jobId);
+        uint256 agentId = _getWinningAgentId(jobId);
 
         IEscrow(escrow).release(jobId, worker, qualityScore, threshold);
         IJobEngine(jobEngine).completeJob(jobId, qualityScore);
+
+        if (qualityScore < threshold && qualityScore < threshold / 2) {
+            uint256 slashAmount = (INexusRegistry6(registry).getStakedAmount(agentId) * 500) / 10000;
+            INexusRegistry6(registry).slashAgent(agentId, slashAmount);
+        }
     }
 
     function _getQualityThreshold(uint256 jobId) internal view returns (uint256) {
@@ -158,9 +164,13 @@ contract NexusAuditEngine {
     function getRequestId(uint256 jobId) external view returns (uint256) {
         return jobToRequest[jobId];
     }
+
+    function _getWinningAgentId(uint256 jobId) internal view returns (uint256) {
+        return IJobEngine(jobEngine).getJobWinningAgent(jobId);
+    }
 }
 
-interface INexusRegistry5 {
+interface INexusRegistry6 {
     function getAgent(uint256 agentId)
         external
         view
@@ -181,4 +191,6 @@ interface INexusRegistry5 {
             address parentAgent,
             uint256[] memory childAgents
         );
+    function getStakedAmount(uint256 agentId) external view returns (uint256);
+    function slashAgent(uint256 agentId, uint256 amount) external;
 }

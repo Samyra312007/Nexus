@@ -111,7 +111,7 @@ contract NexusAgentRegistry is INexusRegistry {
             capabilityIndex[capabilities[i]].push(agentId);
         }
 
-        if (parentAgent != address(0) && agents[agentId].parentAgent != address(0)) {
+        if (parentAgent != address(0)) {
             uint256 parentId = _getAgentIdByAddress(parentAgent);
             if (parentId != 0) {
                 agents[parentId].childAgents.push(agentId);
@@ -210,6 +210,10 @@ contract NexusAgentRegistry is INexusRegistry {
         return agents[agentId].isActive;
     }
 
+    function getStakedAmount(uint256 agentId) external view returns (uint256) {
+        return agents[agentId].stakedAmount;
+    }
+
     function addStake(uint256 agentId) external payable {
         AgentProfile storage agent = agents[agentId];
         if (msg.sender != agent.owner) revert Unauthorized();
@@ -217,6 +221,55 @@ contract NexusAgentRegistry is INexusRegistry {
         if (!agent.isActive && agent.stakedAmount >= MIN_STAKE) {
             agent.isActive = true;
         }
+    }
+
+    function spawnChildAgent(
+        uint256 parentAgentId,
+        string memory name,
+        string memory description,
+        string memory ipfsHash,
+        bytes32[] memory capabilities,
+        uint8 pricingModel,
+        uint256 basePrice
+    ) external payable returns (uint256 childAgentId) {
+        AgentProfile storage parent = agents[parentAgentId];
+        if (msg.sender != parent.owner) revert Unauthorized();
+        if (!parent.isActive) revert AgentInactive(parentAgentId);
+        if (capabilities.length == 0) revert InvalidCapability();
+        if (msg.value < MIN_STAKE) revert InsufficientStake(MIN_STAKE, msg.value);
+
+        childAgentId = ++agentCount;
+        uint256 parentRepBoost = parent.reputationScore / 10;
+        uint256 childRep = parentRepBoost > MAX_REPUTATION ? MAX_REPUTATION : parentRepBoost;
+
+        agents[childAgentId] = AgentProfile({
+            id: childAgentId,
+            owner: msg.sender,
+            name: name,
+            description: description,
+            ipfsMetadataHash: ipfsHash,
+            capabilities: capabilities,
+            pricingModel: pricingModel,
+            basePrice: basePrice,
+            stakedAmount: msg.value,
+            reputationScore: childRep,
+            completedJobs: 0,
+            failedJobs: 0,
+            isActive: true,
+            parentAgent: address(uint160(parentAgentId)),
+            childAgents: new uint256[](0)
+        });
+
+        agentOwner[childAgentId] = msg.sender;
+        ownerAgentCount[msg.sender]++;
+        parent.childAgents.push(childAgentId);
+
+        for (uint256 i = 0; i < capabilities.length; i++) {
+            capabilityIndex[capabilities[i]].push(childAgentId);
+        }
+
+        emit ChildAgentSpawned(parentAgentId, childAgentId);
+        emit AgentRegistered(childAgentId, msg.sender, capabilities);
     }
 
     function _getAgentIdByAddress(address agentAddress) internal view returns (uint256) {

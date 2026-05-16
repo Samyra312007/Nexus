@@ -57,13 +57,13 @@ export interface Bid {
 }
 
 export const CAPABILITY_HASHES: Record<AgentCapability, `0x${string}`> = {
-  'data-scraping': '0x' as `0x${string}`,
-  'sentiment-analysis': '0x' as `0x${string}`,
-  'price-oracle': '0x' as `0x${string}`,
-  'image-generation': '0x' as `0x${string}`,
-  'contract-audit': '0x' as `0x${string}`,
-  'text-summarization': '0x' as `0x${string}`,
-  'event-verification': '0x' as `0x${string}`,
-  'defi-signal': '0x' as `0x${string}`,
-  'audit-qa': '0x' as `0x${string}`,
+  'data-scraping': '0x79ce3061a0856ca55a98fa1cb45cf499f6180f04598a3b9f67e1d6db97aa6490',
+  'sentiment-analysis': '0x4b8087b509e6cc2cb0134c9a0501afba82bdbcbd123871c2c939b30a4f30d82c',
+  'price-oracle': '0xe84a466f61fd3ef7b48426e340721de4a6859b63f9d22100f241f38815209150',
+  'image-generation': '0xb4420fe0b67b01fb28012cd3030277d5b1ac1edefa9db3c3628beebcf58d96bd',
+  'contract-audit': '0x0d47e24f629a80848cbaa1dc79072c821ba518196dd944b04784a11e09db2763',
+  'text-summarization': '0x5462285c928e768a6e9b573816def3af227434696aed3c25b1f020fa141adc38',
+  'event-verification': '0x324cb3d02edbe1b4b2c2458aba54d9d222feb7163d72d75622a21ed5b9fb25f5',
+  'defi-signal': '0x85f65dff72913177dd6d2c591cd5eb97f8e579de06aacefa5ad5d8ec5b65cab5',
+  'audit-qa': '0x9c5a9d5ceeaa2aac50dd72fd88386b5b4c6076f1710577a0b238f4a80e6ef5b0',
 };

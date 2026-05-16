@@ -7,7 +7,7 @@ struct JobRequest {
     uint256 id;
     address poster;
     bytes32 requiredCapability;
-    string taskPayloadIPFS;
+    string taskPayloadIpfs;
     uint256 budgetWei;
     uint256 qualityThreshold;
     uint256 deadline;
@@ -90,7 +90,7 @@ contract NexusJobEngine {
 
     function postJob(
         bytes32 capability,
-        string memory taskPayloadIPFS,
+        string memory taskPayloadIpfs,
         uint256 qualityThreshold,
         uint256 deadlineOffset
     ) external payable returns (uint256 jobId) {
@@ -102,7 +102,7 @@ contract NexusJobEngine {
             id: jobId,
             poster: msg.sender,
             requiredCapability: capability,
-            taskPayloadIPFS: taskPayloadIPFS,
+            taskPayloadIpfs: taskPayloadIpfs,
             budgetWei: msg.value,
             qualityThreshold: qualityThreshold,
             deadline: block.timestamp + deadlineOffset,
@@ -228,8 +228,8 @@ contract NexusJobEngine {
 
     function _getSenderAgentId() internal view returns (uint256) {
         for (uint256 i = 1; i <= INexusRegistry(registry).agentCount(); i++) {
-            (uint256 id, address owner,,,,,,,,,,,,,) = INexusRegistry(registry).getAgent(i);
-            if (owner == msg.sender) return id;
+            (, address owner,,,,,,,,,,,,,) = INexusRegistry(registry).getAgent(i);
+            if (owner == msg.sender) return i;
         }
         return 0;
     }

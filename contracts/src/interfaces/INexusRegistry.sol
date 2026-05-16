@@ -28,4 +28,14 @@ interface INexusRegistry {
     function getAgentsByCapability(bytes32 capability) external view returns (uint256[] memory);
     function agentCount() external view returns (uint256);
     function isActiveAgent(uint256 agentId) external view returns (bool);
+    function getStakedAmount(uint256 agentId) external view returns (uint256);
+    function spawnChildAgent(
+        uint256 parentAgentId,
+        string memory name,
+        string memory description,
+        string memory ipfsHash,
+        bytes32[] memory capabilities,
+        uint8 pricingModel,
+        uint256 basePrice
+    ) external payable returns (uint256 childAgentId);
 }

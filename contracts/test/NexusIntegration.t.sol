@@ -84,7 +84,7 @@ contract NexusIntegrationTest is Test {
         jobEngine.requestAudit(jid);
         JobRequest memory j = jobEngine.getJob(jid);
         vm.prank(address(jobEngine));
-        auditEngine.requestAudit{value: 0.01 ether}(jid, j.taskPayloadIPFS, j.resultCalldata);
+        auditEngine.requestAudit{value: 0.01 ether}(jid, j.taskPayloadIpfs, j.resultCalldata);
         platform.fulfillAudit(jid, score, pass, n);
     }
 
@@ -189,7 +189,10 @@ contract NexusIntegrationTest is Test {
         uint256 failed;
         (rep, , failed) = _agentRep(aid);
         assertEq(failed, 1, "1 failure");
-        assertEq(rep, 5000 + 19 - 50, "penalty applied");
+        // severe failure (score 20 < threshold 75/2) triggers 5% stake slash + 5% rep penalty
+        uint256 expectedRep = 5000 + 19 - 50;
+        expectedRep = expectedRep - (expectedRep * 500 / 10000);
+        assertEq(rep, expectedRep, "penalty + slash applied");
     }
 
     function test_SevereFailurePenalty() public {
