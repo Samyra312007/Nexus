@@ -1,0 +1,18 @@
+{
+  "name": "nexus",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "ipfs-http-client": "^60.0.1",
+    "somnia-agent-kit": "^3.0.11",
+    "viem": "^2.49.3"
+  }
+}

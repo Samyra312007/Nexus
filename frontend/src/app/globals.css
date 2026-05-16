@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0A0B0F;
+  --background-secondary: #12141A;
+  --background-tertiary: #1A1D26;
+  --accent-primary: #6C5CE7;
+  --accent-secondary: #00D2D3;
+  --accent-success: #00B894;
+  --accent-warning: #FDCB6E;
+  --accent-danger: #D63031;
+  --accent-neutral: #636E72;
+  --text-primary: #FFFFFF;
+  --text-secondary: #A0A3B1;
+  --text-tertiary: #636E72;
+  --text-code: #74B9FF;
+  --border: #2D3148;
+  --border-active: #6C5CE7;
+  --radius: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+code, pre, .font-mono {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: scale(1.1); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.animate-slide-in { animation: slide-in 0.2s ease-out; }
+.animate-count-up { animation: count-up 0.3s ease-out; }

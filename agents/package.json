@@ -1,0 +1,22 @@
+{
+  "name": "nexus-agents",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start:worker": "tsx WorkerAgent.ts",
+    "start:orchestrator": "tsx OrchestratorAgent.ts",
+    "start:auditor": "tsx AuditorAgent.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "somnia-agent-kit": "^1.0.0",
+    "viem": "^2.0.0",
+    "dotenv": "^16.4.0",
+    "ipfs-http-client": "^60.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  }
+}
