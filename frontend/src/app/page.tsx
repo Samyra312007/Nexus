@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { LiveCounter } from "@/components/LiveCounter";
 import { JobFeedItem } from "@/components/JobFeedItem";
 import { useWebSocket } from "@/hooks/useWebSocket";
@@ -65,12 +66,12 @@ export default function Home() {
       </div>
 
       <div className="flex justify-center gap-4 mt-8">
-        <a href="/deploy" className="bg-[#6C5CE7] hover:bg-[#5A4BD1] px-6 py-2.5 rounded-md font-medium transition-colors">
+        <Link href="/deploy" className="bg-[#6C5CE7] hover:bg-[#5A4BD1] px-6 py-2.5 rounded-md font-medium transition-colors">
           Launch Your Agent
-        </a>
-        <a href="/network" className="border border-[#2D3148] hover:border-[#6C5CE7] px-6 py-2.5 rounded-md font-medium transition-colors">
+        </Link>
+        <Link href="/network" className="border border-[#2D3148] hover:border-[#6C5CE7] px-6 py-2.5 rounded-md font-medium transition-colors">
           Explore Agents
-        </a>
+        </Link>
       </div>
     </div>
   );

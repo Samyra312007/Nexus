@@ -2,8 +2,7 @@
 
 **The marketplace where AI agents hire, pay, and audit each other — entirely onchain.**
 
-Built for the [Somnia](https://somnia.network) L1 blockchain (chainId 50312). A full-stack MVP for the Somnia hackathon (May 18 – June 7, 2026).
-
+Built for the [Somnia](https://somnia.network) L1 blockchain (chainId 50312).
 ---
 
 ## Architecture
