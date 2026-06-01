@@ -3,14 +3,26 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useWallet } from '@/hooks/useWallet';
+import { motion } from 'framer-motion';
+import { 
+  Activity, 
+  Cpu, 
+  LayoutDashboard, 
+  Briefcase, 
+  Network, 
+  FileText, 
+  ChevronLeft, 
+  Menu,
+  Wallet
+} from 'lucide-react';
 
 const navItems = [
-  { href: '/', label: 'Live Feed', icon: 'M12 21a9 9 0 100-18 9 9 0 000 18zm0-4a5 5 0 100-10 5 5 0 000 10zm0-3a2 2 0 100-4 2 2 0 000 4z' },
-  { href: '/deploy', label: 'Deploy', icon: 'M5 10l7-8 7 8M12 2v13M5 18h14' },
-  { href: '/dashboard', label: 'Dashboard', icon: 'M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z' },
-  { href: '/marketplace', label: 'Jobs', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-  { href: '/network', label: 'Network', icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z' },
-  { href: '/audit-log', label: 'Audit Log', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
+  { href: '/', label: 'Live Feed', icon: Activity },
+  { href: '/deploy', label: 'Deploy Agent', icon: Cpu },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/marketplace', label: 'Job Board', icon: Briefcase },
+  { href: '/network', label: 'Network', icon: Network },
+  { href: '/audit-log', label: 'Audit Log', icon: FileText },
 ];
 
 export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
@@ -19,56 +31,86 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-screen bg-[#0D0E15] border-r border-[#2D3148] z-40 flex flex-col transition-all duration-300 ease-in-out ${collapsed ? 'w-16' : 'w-56'}`}
+      className={`fixed left-4 top-4 bottom-4 z-40 flex flex-col transition-all duration-500 ease-in-out glass rounded-2xl ${
+        collapsed ? 'w-[var(--sidebar-w-collapsed)]' : 'w-[var(--sidebar-w)]'
+      }`}
+      style={{ border: '1px solid var(--border)' }}
     >
-      <div className="h-14 flex items-center justify-between px-3 border-b border-[#2D3148]">
+      <div className="h-20 flex items-center justify-between px-6 border-b border-[var(--border)]">
         {!collapsed && (
-          <span className="text-lg font-bold" style={{ color: '#6C5CE7' }}>NEXUS</span>
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gradient-to-br from-[var(--accent)] to-[var(--cyan)] shadow-lg shadow-[var(--accent-glow)]">
+              <span className="text-sm font-bold text-white">N</span>
+            </div>
+            <span className="font-bold text-lg tracking-tighter gradient-text">NEXUS</span>
+          </Link>
         )}
-        <button
-          onClick={onToggle}
-          className="p-1.5 rounded-md hover:bg-[#1E1F2B] transition-colors text-[#636E72] hover:text-white"
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            {collapsed ? (
-              <><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></>
-            ) : (
-              <><line x1="17" y1="6" x2="12" y2="12" /><line x1="12" y1="12" x2="17" y2="18" /></>
-            )}
-          </svg>
-        </button>
+        {collapsed && (
+          <div className="w-full flex justify-center">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gradient-to-br from-[var(--accent)] to-[var(--cyan)] shadow-lg">
+              <span className="text-sm font-bold text-white">N</span>
+            </div>
+          </div>
+        )}
       </div>
 
-      <nav className="flex-1 py-4 space-y-1 px-2 overflow-y-auto">
+      <div className="flex-1 py-6 px-3 space-y-2 overflow-y-auto">
         {navItems.map((item) => {
           const active = pathname === item.href;
+          const Icon = item.icon;
+          
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-2 py-2.5 rounded-md text-sm transition-colors ${
-                active
-                  ? 'bg-[#6C5CE7]/10 text-[#6C5CE7]'
-                  : 'text-[#A0A3B1] hover:bg-[#1E1F2B] hover:text-white'
-              }`}
-              title={item.label}
+              className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${
+                collapsed ? 'justify-center' : ''
+              } ${active ? 'text-[var(--accent-light)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.03)]'}`}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                <path d={item.icon} />
-              </svg>
-              {!collapsed && <span className="truncate">{item.label}</span>}
+              {active && (
+                <motion.div
+                  layoutId="active-nav"
+                  className="absolute inset-0 bg-gradient-to-r from-[rgba(124,58,237,0.1)] to-transparent rounded-xl border-l-2 border-[var(--accent)]"
+                  initial={false}
+                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                />
+              )}
+              <Icon size={20} className={`shrink-0 transition-transform duration-300 group-hover:scale-110 ${active ? 'drop-shadow-[0_0_8px_var(--accent-glow)]' : ''}`} />
+              {!collapsed && <span className="text-sm font-medium tracking-wide">{item.label}</span>}
+              {collapsed && active && (
+                <div className="absolute right-0 w-1 h-6 bg-[var(--accent)] rounded-l-full shadow-[0_0_10px_var(--accent-glow)]" />
+              )}
             </Link>
           );
         })}
-      </nav>
+      </div>
 
-      {!collapsed && address && (
-        <div className="px-4 py-3 border-t border-[#2D3148]">
-          <div className="text-xs text-[#636E72]">Connected</div>
-          <div className="text-xs text-[#00B894] font-mono truncate">{address.slice(0, 6)}...{address.slice(-4)}</div>
-        </div>
-      )}
+      <div className="p-4 border-t border-[var(--border)]">
+        <button
+          onClick={onToggle}
+          className="w-full flex items-center justify-center gap-2 p-3 rounded-xl hover:bg-[rgba(255,255,255,0.05)] transition-colors text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
+        >
+          {collapsed ? <Menu size={20} /> : (
+            <>
+              <ChevronLeft size={20} />
+              <span className="text-xs font-semibold uppercase tracking-widest">Collapse</span>
+            </>
+          )}
+        </button>
+
+        {!collapsed && address && (
+          <div className="mt-4 p-4 rounded-xl bg-gradient-to-br from-[rgba(16,185,129,0.05)] to-transparent border border-[rgba(16,185,129,0.1)] overflow-hidden relative group">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-[var(--emerald)] opacity-[0.03] blur-2xl rounded-full" />
+            <div className="flex items-center gap-2 mb-2">
+              <Wallet size={12} className="text-[var(--emerald)]" />
+              <div className="text-[10px] uppercase font-bold tracking-widest text-[var(--emerald)]">Connected</div>
+            </div>
+            <div className="text-[11px] font-mono text-[var(--text-primary)] truncate">
+              {address}
+            </div>
+          </div>
+        )}
+      </div>
     </aside>
   );
 }

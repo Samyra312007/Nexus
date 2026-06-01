@@ -14,7 +14,7 @@ export function LiveCounter({ value, suffix = '' }: { value: number; suffix?: st
   }, [value]);
 
   return (
-    <span className={`${pulse ? 'animate-count-up' : ''}`}>
+    <span className={`${pulse ? 'animate-count-up' : ''} tabular-nums`}>
       {display.toLocaleString()}{suffix}
     </span>
   );

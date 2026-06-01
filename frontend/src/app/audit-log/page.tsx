@@ -1,7 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { api } from "@/lib/api";
+import { 
+  ShieldCheck, 
+  Search, 
+  Clock, 
+  ChevronRight, 
+  BarChart3, 
+  CheckCircle2, 
+  XCircle,
+  FileText,
+  Users
+} from "lucide-react";
 import type { AuditRecord } from "@/lib/types";
 
 export default function AuditLogPage() {
@@ -11,65 +23,143 @@ export default function AuditLogPage() {
     api.auditLog().then((d) => setAudits(d.audits)).catch(() => {});
   }, []);
 
-  const passed = audits.filter((a) => a.passed).length;
+  const passedCount = audits.filter((a) => a.passed).length;
   const avgScore = audits.length > 0 ? Math.round(audits.reduce((s, a) => s + a.score, 0) / audits.length) : 0;
 
+  const stats = [
+    { label: 'Total Audits', value: audits.length, color: '#3B82F6', icon: FileText },
+    { label: 'Pass Rate', value: `${audits.length > 0 ? Math.round((passedCount / audits.length) * 100) : 0}%`, color: '#10B981', icon: CheckCircle2 },
+    { label: 'Avg Trust Score', value: `${avgScore}%`, color: '#F59E0B', icon: BarChart3 },
+  ];
+
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-2">AUDIT LOG</h1>
-        <p className="text-[#A0A3B1] text-sm">Every audit verdict recorded transparently on the blockchain.</p>
-      </div>
-
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-[#12141A] border border-[#2D3148] rounded-lg p-4 text-center">
-          <div className="text-[#636E72] text-sm mb-1">Total Audits</div>
-          <div className="text-2xl font-bold" style={{ color: '#74B9FF' }}>{audits.length}</div>
+    <div className="max-w-7xl mx-auto space-y-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-xl glass border border-[var(--border)]">
+              <ShieldCheck size={20} className="text-[var(--accent-light)]" />
+            </div>
+            <h1 className="text-3xl font-black tracking-tighter uppercase">Audit Log</h1>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)] font-medium">Immutable record of all agent performance audits and network consensus.</p>
         </div>
-        <div className="bg-[#12141A] border border-[#2D3148] rounded-lg p-4 text-center">
-          <div className="text-[#636E72] text-sm mb-1">Pass Rate</div>
-          <div className="text-2xl font-bold" style={{ color: '#00B894' }}>
-            {audits.length > 0 ? Math.round((passed / audits.length) * 100) : 0}%
+        
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" size={16} />
+            <input 
+              type="text"
+              placeholder="Search audit hash..."
+              className="pl-12 pr-6 py-2.5 rounded-xl glass border border-[var(--border)] outline-none w-64 text-xs font-bold uppercase tracking-widest focus:border-[var(--accent-light)] transition-all"
+            />
           </div>
         </div>
-        <div className="bg-[#12141A] border border-[#2D3148] rounded-lg p-4 text-center">
-          <div className="text-[#636E72] text-sm mb-1">Avg Score</div>
-          <div className="text-2xl font-bold" style={{ color: '#FDCB6E' }}>{avgScore}</div>
-        </div>
       </div>
 
-      <div className="bg-[#12141A] border border-[#2D3148] rounded-lg overflow-hidden">
-        <div className="grid grid-cols-12 gap-4 px-5 py-3 text-xs font-semibold text-[#636E72] uppercase tracking-wider border-b border-[#2D3148]">
-          <div className="col-span-2">Audit #</div>
-          <div className="col-span-2">Job #</div>
-          <div className="col-span-2">Validators</div>
-          <div className="col-span-2">Score</div>
-          <div className="col-span-2">Consensus</div>
-          <div className="col-span-2">Verdict</div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {stats.map((stat, idx) => {
+          const Icon = stat.icon;
+          return (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              className="glass-strong p-6 rounded-2xl border border-[var(--border)] hover:border-[var(--border-bright)] transition-all group"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div 
+                  className="p-2 rounded-lg transition-all"
+                  style={{ backgroundColor: `${stat.color}10`, color: stat.color }}
+                >
+                  <Icon size={18} />
+                </div>
+              </div>
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-1">{stat.label}</div>
+              <div className="text-2xl font-black font-mono tracking-tight" style={{ color: stat.color }}>{stat.value}</div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      <div className="glass-strong rounded-3xl border border-[var(--border)] overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-tertiary)] bg-[rgba(255,255,255,0.02)]">
+                <th className="px-8 py-5">Audit ID</th>
+                <th className="px-6 py-5">Related Job</th>
+                <th className="px-6 py-5">Quorum</th>
+                <th className="px-6 py-5">Trust Score</th>
+                <th className="px-6 py-5">Consensus</th>
+                <th className="px-8 py-5 text-right">Verdict</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--border)]">
+              {audits.map((record, idx) => {
+                const scoreColor = record.score >= 70 ? 'var(--emerald)' : record.score >= 50 ? 'var(--amber)' : 'var(--rose)';
+                const VerdictIcon = record.passed ? CheckCircle2 : XCircle;
+                const verdictColor = record.passed ? 'var(--emerald)' : 'var(--rose)';
+
+                return (
+                  <motion.tr 
+                    key={record.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: idx * 0.03 }}
+                    className="group hover:bg-[rgba(255,255,255,0.02)] transition-colors"
+                  >
+                    <td className="px-8 py-5">
+                      <span className="text-xs font-black font-mono text-[var(--text-secondary)]">#{record.id}</span>
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black font-mono text-[var(--accent-light)]">JOB-{record.jobId}</span>
+                        <ChevronRight size={12} className="text-[var(--text-tertiary)]" />
+                      </div>
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-2">
+                        <Users size={12} className="text-[var(--text-tertiary)]" />
+                        <span className="text-xs font-black font-mono text-[var(--text-secondary)]">{record.validators} Nodes</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-xs font-black font-mono" style={{ color: scoreColor }}>{record.score}%</span>
+                        <div className="w-16 h-1 bg-[var(--border)] rounded-full overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${record.score}%`, backgroundColor: scoreColor }} />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-5">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-tertiary)] bg-white/5 px-2 py-1 rounded-md border border-[var(--border)]">{record.consensus}</span>
+                    </td>
+                    <td className="px-8 py-5 text-right">
+                      <div 
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-opacity-20 transition-all"
+                        style={{ backgroundColor: `${verdictColor}10`, color: verdictColor, borderColor: `${verdictColor}30` }}
+                      >
+                        <VerdictIcon size={12} />
+                        <span className="text-[10px] font-black uppercase tracking-[0.1em]">{record.passed ? 'Passed' : 'Failed'}</span>
+                      </div>
+                    </td>
+                  </motion.tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-        {audits.map((record) => (
-          <div key={record.id} className="grid grid-cols-12 gap-4 px-5 py-3 text-sm border-b border-[#2D3148] hover:bg-[#1A1D26] transition-colors">
-            <div className="col-span-2 font-mono">#{record.id}</div>
-            <div className="col-span-2 font-mono" style={{ color: '#74B9FF' }}>#{record.jobId}</div>
-            <div className="col-span-2 font-mono">{record.validators} agents</div>
-            <div className="col-span-2 font-mono" style={{
-              color: record.score >= 70 ? '#00B894' : record.score >= 50 ? '#FDCB6E' : '#D63031',
-            }}>
-              {record.score}/100
-            </div>
-            <div className="col-span-2 font-mono text-[#A0A3B1]">{record.consensus}</div>
-            <div className="col-span-2">
-              <span className="text-xs px-2 py-0.5 rounded font-mono" style={{
-                backgroundColor: record.passed ? '#00B89422' : '#D6303122',
-                color: record.passed ? '#00B894' : '#D63031',
-              }}>
-                {record.passed ? 'PASSED' : 'FAILED'}
-              </span>
-            </div>
-          </div>
-        ))}
+        
         {audits.length === 0 && (
-          <div className="text-center text-[#636E72] py-12">No audit records yet.</div>
+          <div className="py-24 flex flex-col items-center justify-center">
+            <div className="w-16 h-16 rounded-full glass flex items-center justify-center mb-6">
+              <FileText size={32} className="text-[var(--text-tertiary)]" />
+            </div>
+            <h3 className="text-lg font-black uppercase tracking-tight mb-2">No Audit Records</h3>
+            <p className="text-sm text-[var(--text-secondary)]">Transactions are being indexed, please stand by...</p>
+          </div>
         )}
       </div>
     </div>
