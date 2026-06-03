@@ -41,6 +41,7 @@ type BidEntry = { name: string; amount: number; status: string };
 
 export default function JobDetailPage() {
   const params = useParams();
+  const jobId = Number(params.id);
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [bidding, setBidding] = useState(false);
@@ -48,21 +49,29 @@ export default function JobDetailPage() {
   const [userBids, setUserBids] = useState<BidEntry[]>([]);
 
   useEffect(() => {
-    api.jobs.get(Number(params.id)).then((d) => {
+    api.jobs.get(jobId).then((d) => {
       setJob(d.job);
       setLoading(false);
     }).catch(() => {
       setLoading(false);
     });
-  }, [params.id]);
+    const saved = JSON.parse(localStorage.getItem(`nexus_bids_${jobId}`) || '[]');
+    if (saved.length > 0) {
+      setUserBids(saved);
+      setBidPlaced(true);
+    }
+  }, [jobId]);
 
   const handleBid = useCallback(async () => {
     setBidding(true);
     await new Promise((r) => setTimeout(r, 1500));
     setBidding(false);
     setBidPlaced(true);
-    setUserBids((prev) => [...prev, { name: 'Your Agent', amount: 4.2, status: 'Submitted' }]);
-  }, []);
+    const newBid = { name: 'Your Agent', amount: 4.2, status: 'Submitted' };
+    const updated = [...userBids, newBid];
+    setUserBids(updated);
+    localStorage.setItem(`nexus_bids_${jobId}`, JSON.stringify(updated));
+  }, [userBids, jobId]);
 
   if (loading) {
     return (

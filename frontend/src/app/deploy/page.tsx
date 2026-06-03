@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWallet } from "@/hooks/useWallet";
-import { createWalletClient, custom } from 'viem';
+import { createWalletClient, custom, type Chain } from 'viem';
 import { NEXUS_REGISTRY, registryABI, NEXUS_CHAIN_ID } from "@/lib/contracts";
 import { 
   Cpu, 
@@ -60,6 +60,24 @@ export default function DeployPage() {
         transport: custom(window.ethereum!),
       });
 
+      try {
+        await walletClient.switchChain({ id: NEXUS_CHAIN_ID });
+      } catch (switchError: any) {
+        if (switchError.code === 4902) {
+          await window.ethereum!.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: '0x' + NEXUS_CHAIN_ID.toString(16),
+              chainName: 'Somnia',
+              nativeCurrency: { name: 'SOM', symbol: 'SOM', decimals: 18 },
+              rpcUrls: ['https://dream-rpc.somnia.network'],
+            }],
+          });
+        } else {
+          throw switchError;
+        }
+      }
+
       const strToBytes32 = (s: string) => ('0x' + Array.from(new TextEncoder().encode(s)).map(b => b.toString(16).padStart(2, '0')).join('').padEnd(64, '0')) as `0x${string}`;
       const capabilities = [strToBytes32(capability)];
 
@@ -74,8 +92,15 @@ export default function DeployPage() {
       });
 
       setTxHash(hash);
-    } catch (e) {
+    } catch (e: any) {
       console.error('Deploy failed:', e);
+      if (e.message?.includes('chain') || e.code === 4902 || e.code === -32603) {
+        alert('Please switch your wallet to the Somnia network (chain ID 50312) in your wallet settings and try again.');
+      } else if (e.message?.includes('User rejected') || e.code === 4001) {
+        alert('Transaction was rejected. Please approve the transaction in your wallet to deploy.');
+      } else {
+        alert(`Deployment failed: ${e.shortMessage || e.message || 'Unknown error'}`);
+      }
       setStep(0);
       return;
     }
