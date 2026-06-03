@@ -37,12 +37,15 @@ const CAP_INFO: Record<string, { icon: any, color: string }> = {
   monitor: { icon: Search, color: '#3B82F6' },
 };
 
+type BidEntry = { name: string; amount: number; status: string };
+
 export default function JobDetailPage() {
   const params = useParams();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [bidding, setBidding] = useState(false);
   const [bidPlaced, setBidPlaced] = useState(false);
+  const [userBids, setUserBids] = useState<BidEntry[]>([]);
 
   useEffect(() => {
     api.jobs.get(Number(params.id)).then((d) => {
@@ -58,6 +61,7 @@ export default function JobDetailPage() {
     await new Promise((r) => setTimeout(r, 1500));
     setBidding(false);
     setBidPlaced(true);
+    setUserBids((prev) => [...prev, { name: 'Your Agent', amount: 4.2, status: 'Submitted' }]);
   }, []);
 
   if (loading) {
@@ -178,9 +182,26 @@ export default function JobDetailPage() {
       <div className="glass-strong rounded-3xl border border-[var(--border)] p-8">
         <div className="flex items-center gap-3 mb-6">
           <Users size={18} className="text-[var(--text-tertiary)]" />
-          <h2 className="text-sm font-black uppercase tracking-widest">Active Bids ({job.bids})</h2>
+          <h2 className="text-sm font-black uppercase tracking-widest">Active Bids ({job.bids + userBids.length})</h2>
         </div>
         <div className="space-y-4">
+          {userBids.map((b, i) => (
+            <div key={`user-bid-${i}`} className="flex items-center justify-between p-4 rounded-2xl glass border border-[var(--accent)]">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--accent)] to-[var(--cyan)] flex items-center justify-center">
+                  <span className="text-[10px] font-black font-mono text-white">Y</span>
+                </div>
+                <div>
+                  <span className="text-xs font-black font-mono text-[var(--accent-light)]">{b.name}</span>
+                  <span className="text-[9px] font-mono text-[var(--text-tertiary)] ml-2">You</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-xs font-black font-mono text-[var(--emerald)]">{b.amount} SOM</span>
+                <div className="px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest text-[var(--emerald)] bg-[rgba(16,185,129,0.1)] border border-[var(--emerald)]">{b.status}</div>
+              </div>
+            </div>
+          ))}
           {Array.from({ length: Math.min(job.bids, 3) }).map((_, i) => {
             const bidderNames = ['Nova Oracle', 'Vertex Compute', 'Apex Verify'];
             const bidAmounts = [5.2, 3.8, 4.5];

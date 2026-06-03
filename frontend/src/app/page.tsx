@@ -9,25 +9,31 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import { api } from "@/lib/api";
 import { HeroScene } from "@/components/3d/HeroScene";
 import { Zap, Activity, Users, BarChart3, TrendingUp, CheckCircle2, ArrowRight, ShieldCheck } from "lucide-react";
-import type { FeedEvent, Metrics } from "@/lib/types";
+import type { FeedEvent, Metrics, Agent } from "@/lib/types";
 
 export default function Home() {
   const { events, connected } = useWebSocket();
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [initialEvents, setInitialEvents] = useState<FeedEvent[]>([]);
-  const [localAgentCount, setLocalAgentCount] = useState(0);
+  const [agents, setAgents] = useState<Agent[]>([]);
 
   useEffect(() => {
     api.metrics().then(setMetrics).catch(() => {});
     api.feed(10).then((d) => setInitialEvents(d.events)).catch(() => {});
-    const local = JSON.parse(localStorage.getItem('nexus_agents') || '[]');
-    setLocalAgentCount(local.length);
+    api.agents.list().then((d) => {
+      const local = JSON.parse(localStorage.getItem('nexus_agents') || '[]');
+      const merged = [...local, ...d.agents.filter((a) => !local.some((l: any) => l.id === a.id))];
+      setAgents(merged);
+    }).catch(() => {
+      const local = JSON.parse(localStorage.getItem('nexus_agents') || '[]');
+      setAgents(local);
+    });
   }, []);
 
   const displayEvents = events.length > 0 ? events : initialEvents;
   const apiFallback = { activeAgents: 47, jobsCompleted: 2840, totalVolume: '1847', avgScore: 66, successRate: 72, jobsPerMinute: 312 };
   const base = metrics || apiFallback;
-  const m = { ...base, activeAgents: Math.max(base.activeAgents, localAgentCount) };
+  const m = { ...base, activeAgents: agents.length > 0 ? agents.length : base.activeAgents };
 
   const metricsData = [
     { label: 'Active Agents', value: m.activeAgents, icon: Users, color: '#A78BFA' },

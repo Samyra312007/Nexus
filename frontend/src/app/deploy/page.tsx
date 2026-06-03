@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWallet } from "@/hooks/useWallet";
+import { createWalletClient, custom } from 'viem';
+import { NEXUS_REGISTRY, registryABI, NEXUS_CHAIN_ID } from "@/lib/contracts";
 import { 
   Cpu, 
   Settings, 
@@ -30,6 +32,13 @@ const CAP_INFO: Record<string, { icon: any, color: string, description: string }
   monitor: { icon: Search, color: '#3B82F6', description: 'Watch onchain events and trigger actions.' },
 };
 
+const SOMNIA_CHAIN = {
+  id: NEXUS_CHAIN_ID,
+  name: 'Somnia',
+  nativeCurrency: { name: 'SOM', symbol: 'SOM', decimals: 18 },
+  rpcUrls: { default: { http: ['https://dream-rpc.somnia.network'] } },
+} as const;
+
 export default function DeployPage() {
   const { address, connect, balance } = useWallet();
   const [step, setStep] = useState(0);
@@ -38,12 +47,39 @@ export default function DeployPage() {
   const [stake, setStake] = useState(10);
   const [spendLimit, setSpendLimit] = useState(5);
   const [deploying, setDeploying] = useState(false);
+  const [txHash, setTxHash] = useState('');
 
   const handleDeploy = async () => {
     if (!address) { connect(); return; }
     if (!name || stake < 10) return;
     setStep(2);
-    await new Promise((r) => setTimeout(r, 2000));
+
+    try {
+      const walletClient = createWalletClient({
+        chain: SOMNIA_CHAIN,
+        transport: custom(window.ethereum!),
+      });
+
+      const strToBytes32 = (s: string) => ('0x' + Array.from(new TextEncoder().encode(s)).map(b => b.toString(16).padStart(2, '0')).join('').padEnd(64, '0')) as `0x${string}`;
+      const capabilities = [strToBytes32(capability)];
+
+      const hash = await walletClient.writeContract({
+        address: NEXUS_REGISTRY,
+        abi: registryABI,
+        functionName: 'registerAgent',
+        args: [name, '', '', capabilities, 0, BigInt(spendLimit) * BigInt(1e18), '0x0000000000000000000000000000000000000000'],
+        value: BigInt(stake) * BigInt(1e18),
+        account: address as `0x${string}`,
+        chain: SOMNIA_CHAIN,
+      });
+
+      setTxHash(hash);
+    } catch (e) {
+      console.error('Deploy failed:', e);
+      setStep(0);
+      return;
+    }
+
     const agent = {
       id: Math.floor(Math.random() * 9999),
       owner: address,
@@ -354,9 +390,15 @@ export default function DeployPage() {
               <CheckCircle2 size={40} className="text-[var(--emerald)]" />
             </div>
             <h2 className="text-3xl font-black uppercase tracking-tighter text-[var(--emerald)] mb-4">Node Activated</h2>
-            <p className="text-sm text-[var(--text-secondary)] font-medium leading-relaxed mb-10">
+            <p className="text-sm text-[var(--text-secondary)] font-medium leading-relaxed mb-4">
               Deployment complete. Agent <span className="text-[var(--text-primary)] font-black">#{Math.floor(Math.random() * 9999)}</span> is now operational and awaiting computational tasks.
             </p>
+            {txHash && (
+              <div className="mb-8 p-4 rounded-xl bg-[rgba(255,255,255,0.03)] border border-[var(--border)]">
+                <div className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-tertiary)] mb-2">Transaction</div>
+                <div className="text-[10px] font-mono text-[var(--accent-light)] break-all">{txHash}</div>
+              </div>
+            )}
             <div className="space-y-4">
               <Link href="/dashboard" className="btn-primary w-full py-5 rounded-2xl font-black uppercase tracking-widest block text-center">
                 Command Center
