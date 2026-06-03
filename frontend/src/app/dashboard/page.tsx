@@ -21,6 +21,7 @@ import type { Agent, Metrics } from "@/lib/types";
 export default function DashboardPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [pulseKey, setPulseKey] = useState(0);
   const agentGridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -106,14 +107,22 @@ export default function DashboardPage() {
             <h2 className="text-sm font-black uppercase tracking-widest">Active Agent Clusters</h2>
           </div>
           <button
-            onClick={() => agentGridRef.current?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => {
+              agentGridRef.current?.scrollIntoView({ behavior: 'smooth' });
+              setPulseKey((k) => k + 1);
+            }}
             className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-light)] hover:underline"
           >
             Manage All
           </button>
         </div>
         
-        <div ref={agentGridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          ref={agentGridRef}
+          key={pulseKey}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse-border"
+          style={{ animation: pulseKey > 0 ? 'pulseBorder 0.6s ease-out' : 'none' }}
+        >
           {agents.map((agent) => (
             <AgentCard key={agent.id} {...agent} />
           ))}

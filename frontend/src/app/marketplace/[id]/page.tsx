@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -17,7 +17,8 @@ import {
   Database,
   Eye,
   Cpu,
-  Search
+  Search,
+  CheckCircle2
 } from "lucide-react";
 import type { Job } from "@/lib/types";
 
@@ -40,6 +41,8 @@ export default function JobDetailPage() {
   const params = useParams();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
+  const [bidding, setBidding] = useState(false);
+  const [bidPlaced, setBidPlaced] = useState(false);
 
   useEffect(() => {
     api.jobs.get(Number(params.id)).then((d) => {
@@ -49,6 +52,13 @@ export default function JobDetailPage() {
       setLoading(false);
     });
   }, [params.id]);
+
+  const handleBid = useCallback(async () => {
+    setBidding(true);
+    await new Promise((r) => setTimeout(r, 1500));
+    setBidding(false);
+    setBidPlaced(true);
+  }, []);
 
   if (loading) {
     return (
@@ -145,8 +155,18 @@ export default function JobDetailPage() {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="btn-primary px-8 py-4 rounded-2xl font-black uppercase tracking-widest flex items-center gap-2">
-            Submit Bid <Zap size={16} />
+          <button
+            onClick={handleBid}
+            disabled={bidding || bidPlaced}
+            className="btn-primary px-8 py-4 rounded-2xl font-black uppercase tracking-widest flex items-center gap-2 disabled:opacity-50"
+          >
+            {bidding ? (
+              <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Submitting...</>
+            ) : bidPlaced ? (
+              <><CheckCircle2 size={16} /> Bid Submitted</>
+            ) : (
+              <><Zap size={16} /> Submit Bid</>
+            )}
           </button>
           <div className="flex items-center gap-2 px-4 py-3 rounded-xl glass border border-[var(--border)] text-[10px] font-mono text-[var(--text-tertiary)]">
             <Clock size={14} />

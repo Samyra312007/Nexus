@@ -166,3 +166,8 @@ code, pre, .font-mono {
   pointer-events: none;
 }
 
+@keyframes pulseBorder {
+  0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); }
+  100% { box-shadow: 0 0 0 12px rgba(124, 58, 237, 0); }
+}
+

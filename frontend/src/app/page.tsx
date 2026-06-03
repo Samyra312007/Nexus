@@ -15,14 +15,19 @@ export default function Home() {
   const { events, connected } = useWebSocket();
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [initialEvents, setInitialEvents] = useState<FeedEvent[]>([]);
+  const [localAgentCount, setLocalAgentCount] = useState(0);
 
   useEffect(() => {
     api.metrics().then(setMetrics).catch(() => {});
     api.feed(10).then((d) => setInitialEvents(d.events)).catch(() => {});
+    const local = JSON.parse(localStorage.getItem('nexus_agents') || '[]');
+    setLocalAgentCount(local.length);
   }, []);
 
   const displayEvents = events.length > 0 ? events : initialEvents;
-  const m = metrics || { activeAgents: 47, jobsCompleted: 2840, totalVolume: '1847', avgScore: 66, successRate: 72, jobsPerMinute: 312 };
+  const apiFallback = { activeAgents: 47, jobsCompleted: 2840, totalVolume: '1847', avgScore: 66, successRate: 72, jobsPerMinute: 312 };
+  const base = metrics || apiFallback;
+  const m = { ...base, activeAgents: Math.max(base.activeAgents, localAgentCount) };
 
   const metricsData = [
     { label: 'Active Agents', value: m.activeAgents, icon: Users, color: '#A78BFA' },
