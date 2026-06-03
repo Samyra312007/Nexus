@@ -18,13 +18,18 @@ import type { AuditRecord } from "@/lib/types";
 
 export default function AuditLogPage() {
   const [audits, setAudits] = useState<AuditRecord[]>([]);
+  const [searchHash, setSearchHash] = useState('');
 
   useEffect(() => {
     api.auditLog().then((d) => setAudits(d.audits)).catch(() => {});
   }, []);
 
-  const passedCount = audits.filter((a) => a.passed).length;
-  const avgScore = audits.length > 0 ? Math.round(audits.reduce((s, a) => s + a.score, 0) / audits.length) : 0;
+  const filteredAudits = audits.filter((a) =>
+    String(a.id).includes(searchHash) || String(a.jobId).includes(searchHash) || searchHash === ''
+  );
+
+  const passedCount = filteredAudits.filter((a) => a.passed).length;
+  const avgScore = filteredAudits.length > 0 ? Math.round(filteredAudits.reduce((s, a) => s + a.score, 0) / filteredAudits.length) : 0;
 
   const stats = [
     { label: 'Total Audits', value: audits.length, color: '#3B82F6', icon: FileText },
@@ -51,6 +56,8 @@ export default function AuditLogPage() {
             <input 
               type="text"
               placeholder="Search audit hash..."
+              value={searchHash}
+              onChange={(e) => setSearchHash(e.target.value)}
               className="pl-12 pr-6 py-2.5 rounded-xl glass border border-[var(--border)] outline-none w-64 text-xs font-bold uppercase tracking-widest focus:border-[var(--accent-light)] transition-all"
             />
           </div>
@@ -97,7 +104,7 @@ export default function AuditLogPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
-              {audits.map((record, idx) => {
+              {filteredAudits.map((record, idx) => {
                 const scoreColor = record.score >= 70 ? 'var(--emerald)' : record.score >= 50 ? 'var(--amber)' : 'var(--rose)';
                 const VerdictIcon = record.passed ? CheckCircle2 : XCircle;
                 const verdictColor = record.passed ? 'var(--emerald)' : 'var(--rose)';
@@ -152,7 +159,7 @@ export default function AuditLogPage() {
           </table>
         </div>
         
-        {audits.length === 0 && (
+        {filteredAudits.length === 0 && (
           <div className="py-24 flex flex-col items-center justify-center">
             <div className="w-16 h-16 rounded-full glass flex items-center justify-center mb-6">
               <FileText size={32} className="text-[var(--text-tertiary)]" />

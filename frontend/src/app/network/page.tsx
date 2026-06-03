@@ -24,6 +24,15 @@ export default function NetworkPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hoveredAgent, setHoveredAgent] = useState<number | null>(null);
 
+  const handleExport = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.download = 'nexus-skill-graph.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -116,7 +125,10 @@ export default function NetworkPage() {
         </div>
         
         <div className="flex items-center gap-3">
-          <button className="px-4 py-2 rounded-xl glass border border-[var(--border)] flex items-center gap-2 text-xs font-black uppercase tracking-widest hover:border-[var(--accent-light)] transition-all">
+          <button
+            onClick={handleExport}
+            className="px-4 py-2 rounded-xl glass border border-[var(--border)] flex items-center gap-2 text-xs font-black uppercase tracking-widest hover:border-[var(--accent-light)] transition-all"
+          >
             <Share2 size={14} /> Export Map
           </button>
         </div>

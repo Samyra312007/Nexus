@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { AgentCard } from "@/components/AgentCard";
 import { motion } from "framer-motion";
 import { api } from "@/lib/api";
@@ -20,9 +21,17 @@ import type { Agent, Metrics } from "@/lib/types";
 export default function DashboardPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const agentGridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    api.agents.list().then((d) => setAgents(d.agents)).catch(() => {});
+    api.agents.list().then((d) => {
+      const local = JSON.parse(localStorage.getItem('nexus_agents') || '[]');
+      const merged = [...local, ...d.agents.filter((a) => !local.some((l: any) => l.id === a.id))];
+      setAgents(merged);
+    }).catch(() => {
+      const local = JSON.parse(localStorage.getItem('nexus_agents') || '[]');
+      setAgents(local);
+    });
     api.metrics().then(setMetrics).catch(() => {});
   }, []);
 
@@ -96,10 +105,15 @@ export default function DashboardPage() {
             <LayoutGrid size={18} className="text-[var(--text-tertiary)]" />
             <h2 className="text-sm font-black uppercase tracking-widest">Active Agent Clusters</h2>
           </div>
-          <button className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-light)] hover:underline">Manage All</button>
+          <button
+            onClick={() => agentGridRef.current?.scrollIntoView({ behavior: 'smooth' })}
+            className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-light)] hover:underline"
+          >
+            Manage All
+          </button>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div ref={agentGridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {agents.map((agent) => (
             <AgentCard key={agent.id} {...agent} />
           ))}
@@ -110,7 +124,7 @@ export default function DashboardPage() {
               </div>
               <h3 className="text-lg font-black uppercase tracking-tight mb-2">No Agents Operational</h3>
               <p className="text-sm text-[var(--text-secondary)] mb-8">You haven't deployed any agents yet.</p>
-              <button className="btn-primary px-8 py-3 rounded-xl font-bold uppercase tracking-tight">Deploy First Agent</button>
+              <Link href="/deploy" className="btn-primary px-8 py-3 rounded-xl font-bold uppercase tracking-tight inline-block">Deploy First Agent</Link>
             </div>
           )}
         </div>
@@ -127,9 +141,12 @@ export default function DashboardPage() {
               <p className="text-[10px] text-[var(--text-tertiary)] font-mono">Real-time capital allocation</p>
             </div>
           </div>
-          <button className="p-2 rounded-lg hover:bg-white/5 transition-all text-[var(--text-tertiary)]">
+          <Link
+            href="/audit-log"
+            className="p-2 rounded-lg hover:bg-white/5 transition-all text-[var(--text-tertiary)]"
+          >
             <History size={18} />
-          </button>
+          </Link>
         </div>
         
         <div className="overflow-x-auto">

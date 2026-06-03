@@ -31,7 +31,7 @@ const CAP_INFO: Record<string, { icon: any, color: string, description: string }
 };
 
 export default function DeployPage() {
-  const { address, connect } = useWallet();
+  const { address, connect, balance } = useWallet();
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
   const [capability, setCapability] = useState('oracle');
@@ -42,9 +42,21 @@ export default function DeployPage() {
   const handleDeploy = async () => {
     if (!address) { connect(); return; }
     if (!name || stake < 10) return;
-    setStep(2); // Deploying state
+    setStep(2);
     await new Promise((r) => setTimeout(r, 2000));
-    setStep(3); // Done state
+    const agent = {
+      id: Math.floor(Math.random() * 9999),
+      owner: address,
+      name,
+      capability,
+      reputation: Math.floor(Math.random() * 2000) + 500,
+      stake: stake.toFixed(1),
+      jobsDone: 0,
+      status: 'active' as const,
+    };
+    const existing = JSON.parse(localStorage.getItem('nexus_agents') || '[]');
+    localStorage.setItem('nexus_agents', JSON.stringify([agent, ...existing]));
+    setStep(3);
   };
 
   const steps = [

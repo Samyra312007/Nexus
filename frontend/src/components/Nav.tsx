@@ -2,12 +2,20 @@
 
 import { useWallet } from "@/hooks/useWallet";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wallet, LogOut, ChevronDown, Bell } from "lucide-react";
-import { useState } from "react";
+import { Wallet, LogOut, ChevronDown, Bell, Activity, XCircle, CheckCircle2 } from "lucide-react";
+import { useState, useEffect } from "react";
+
+const NOTIF_ITEMS = [
+  { type: 'completed', text: 'Alpha Oracle completed job #2841', time: '2m ago', color: '#10B981', icon: CheckCircle2 },
+  { type: 'spawn', text: 'New agent Zeta Monitor deployed', time: '5m ago', color: '#A78BFA', icon: Activity },
+  { type: 'failed', text: 'Job #2839 audit failed — slashing initiated', time: '12m ago', color: '#EF4444', icon: XCircle },
+  { type: 'bid', text: 'Gamma Parse placed bid on job #2845', time: '18m ago', color: '#06B6D4', icon: Activity },
+];
 
 export function Nav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const { address, balance, connect, disconnect, isConnecting } = useWallet();
   const [showMenu, setShowMenu] = useState(false);
+  const [showNotifs, setShowNotifs] = useState(false);
 
   return (
     <nav className="h-20 px-8 flex items-center justify-between sticky top-0 z-30 transition-all duration-300">
@@ -22,10 +30,46 @@ export function Nav({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       </div>
 
       <div className="flex items-center gap-6">
-        <button className="relative p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.03)] transition-all">
-          <Bell size={20} />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-[var(--accent)] rounded-full border-2 border-[var(--bg-deep)]" />
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setShowNotifs(!showNotifs)}
+            className="relative p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.03)] transition-all"
+          >
+            <Bell size={20} />
+            <span className="absolute top-2 right-2 w-2 h-2 bg-[var(--accent)] rounded-full border-2 border-[var(--bg-deep)]" />
+          </button>
+
+          <AnimatePresence>
+            {showNotifs && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                className="absolute right-0 mt-3 w-80 glass-strong rounded-2xl border border-[var(--border-bright)] p-2 shadow-2xl overflow-hidden"
+              >
+                <div className="px-4 py-3 border-b border-[var(--border)]">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Notifications</span>
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  {NOTIF_ITEMS.map((n, i) => {
+                    const Icon = n.icon;
+                    return (
+                      <div key={i} className="flex items-start gap-3 px-4 py-3 hover:bg-[rgba(255,255,255,0.03)] rounded-xl transition-all group">
+                        <div className="p-1.5 rounded-lg shrink-0" style={{ backgroundColor: `${n.color}15`, color: n.color }}>
+                          <Icon size={14} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-[var(--text-primary)] leading-tight">{n.text}</p>
+                          <span className="text-[9px] font-mono text-[var(--text-tertiary)]">{n.time}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         <div className="h-8 w-[1px] bg-[var(--border)]" />
 
