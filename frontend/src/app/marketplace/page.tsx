@@ -15,7 +15,8 @@ import {
   Shield,
   Database,
   Eye,
-  Cpu
+  Cpu,
+  CheckCircle2
 } from "lucide-react";
 import type { Job } from "@/lib/types";
 
@@ -39,9 +40,20 @@ export default function MarketplacePage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [showFilter, setShowFilter] = useState(false);
+  const [userBidCounts, setUserBidCounts] = useState<Record<number, number>>({});
 
   useEffect(() => {
     api.jobs.list().then((d) => setJobs(d.jobs)).catch(() => {});
+    const counts: Record<number, number> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('nexus_bids_')) {
+        const jobId = Number(key.replace('nexus_bids_', ''));
+        const bids = JSON.parse(localStorage.getItem(key) || '[]');
+        counts[jobId] = bids.length;
+      }
+    }
+    setUserBidCounts(counts);
   }, []);
 
   const filteredJobs = jobs.filter(j => {
@@ -182,7 +194,10 @@ export default function MarketplacePage() {
 
                     <div className="flex flex-col">
                       <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-tertiary)] mb-1">Response</span>
-                      <span className="text-xs font-black font-mono text-[var(--text-primary)]">{job.bids} Bids</span>
+                      <span className="text-xs font-black font-mono text-[var(--text-primary)]">
+                        {job.bids + (userBidCounts[job.id] || 0)} Bids
+                        {userBidCounts[job.id] ? <span className="text-[var(--emerald)] ml-1">(+{userBidCounts[job.id]})</span> : ''}
+                      </span>
                     </div>
 
                     <div className="flex flex-col items-end min-w-[100px]">
@@ -193,6 +208,11 @@ export default function MarketplacePage() {
                         <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
                         {job.status}
                       </span>
+                      {userBidCounts[job.id] ? (
+                        <span className="mt-1.5 text-[9px] font-black uppercase tracking-widest text-[var(--emerald)] flex items-center gap-1">
+                          <CheckCircle2 size={10} /> Bid Placed
+                        </span>
+                      ) : ''}
                     </div>
 
                     <div className="p-2 rounded-xl text-[var(--text-tertiary)] group-hover:text-[var(--accent-light)] group-hover:translate-x-1 transition-all">
